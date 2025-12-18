@@ -11,8 +11,7 @@ from .telegram import Update, get_chat_administrators, send_message
 
 def receive_update():
     update = json.loads(request.data.decode())
-    with suppress(Exception):
-        parse_update(update)
+    parse_update(update)
     return ""
 
 
