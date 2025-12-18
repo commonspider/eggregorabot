@@ -1,6 +1,4 @@
 import json
-import traceback
-from contextlib import suppress
 
 from flask import request
 
@@ -16,7 +14,7 @@ def receive_update():
         parse_update(update)
     except Exception as exc:
         with open("last_exception", "w") as f:
-            traceback.print_exception(exc, file=f)
+            print(exc, file=f)
     finally:
         return ""
 
