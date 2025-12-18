@@ -1,3 +1,4 @@
+import json
 from contextlib import suppress
 
 from flask import request
@@ -9,7 +10,7 @@ from .telegram import Update, get_chat_administrators, send_message
 
 
 def receive_update():
-    update = request.json
+    update = json.loads(request.data.decode())
     with suppress(Exception):
         parse_update(update)
     return ""
