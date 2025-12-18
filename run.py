@@ -8,7 +8,7 @@ load_dotenv()
 load_aggregators()
 app = create_app()
 app.route(f"/cronjob")(cron_job)
-app.route(f"/{os.environ["FLASK_TELEGRAM_TOKEN"]}")(receive_update)
+app.route(f"/{os.environ["FLASK_TELEGRAM_TOKEN"]}", methods=["POST"])(receive_update)
 
 
 @app.route("/")
