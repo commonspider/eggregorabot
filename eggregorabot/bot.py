@@ -1,4 +1,5 @@
 import json
+import traceback
 from contextlib import suppress
 
 from flask import request
@@ -10,9 +11,15 @@ from .telegram import Update, get_chat_administrators, send_message
 
 
 def receive_update():
-    update = json.loads(request.data.decode())
-    parse_update(update)
-    return ""
+    try:
+        update = json.loads(request.data.decode())
+        parse_update(update)
+    except Exception as exc:
+        with open("last_exception", "w") as f:
+            traceback.print_exception(exc, file=f)
+    finally:
+        return ""
+
 
 
 @with_app_context
