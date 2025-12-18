@@ -9,4 +9,6 @@ load_aggregators()
 app = create_app()
 app.route(f"/cronjob")(cron_job)
 app.route(f"/{os.environ["FLASK_TELEGRAM_TOKEN"]}")(receive_update)
-app.run()
+
+if __name__ == "__main__":
+    app.run()
