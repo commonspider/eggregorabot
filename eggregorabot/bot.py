@@ -1,4 +1,5 @@
 import json
+import time
 
 from flask import request
 
@@ -51,14 +52,23 @@ def parse_update(update: Update):
 
 def parse_command(command: str, argument: str = None):
     if command == "/lista":
-        send_message(text="\n".join(list_aggregators()))
+        aggregators = list_aggregators()
+        if len(aggregators) == 0:
+            send_message("Nessun feed configurato")
+        else:
+            send_message(text="\n".join(list_aggregators()))
     elif command == "/invia":
         if argument is None:
             send_message(text="Manca il nome del feed")
         elif (aggregator := get_aggregator(argument)) is None:
             send_message(text="Feed non trovato.")
         else:
-            for item in aggregator():
-                send_item(item)
+            items = aggregator()
+            if len(items) == 0:
+                send_message(text="Il feed è vuoto")
+            else:
+                for item in items:
+                    send_item(item)
+                    time.sleep(1)
     else:
         send_message(text="Comando inesistente.")
