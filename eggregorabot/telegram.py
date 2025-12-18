@@ -10,7 +10,7 @@ def request(endpoint: str, parameters: dict[str, Any] = None):
     response = get_session().post(f"https://api.telegram.org/bot{get_token()}/{endpoint}", json=parameters)
     content = response.json()
     if not content["ok"]:
-        raise Exception
+        raise Exception(content)
     return content["result"]
 
 
