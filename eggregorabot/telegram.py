@@ -75,6 +75,11 @@ def loop_updates(*, offset: int = None):
 
 
 @api
+def set_webhook(*, url: str) -> bool:
+    pass
+
+
+@api
 def send_message(*, chat_id: int | str = None, text: str) -> Message:
     ...
 

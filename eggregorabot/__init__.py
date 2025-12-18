@@ -1,5 +1,5 @@
 from .app import create_app
-from .telegram import loop_updates
+from .telegram import loop_updates, set_webhook
 from .bot import parse_update, receive_update
 from .item import Item
 from .aggregators import aggregator, load_aggregators
