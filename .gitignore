@@ -1,0 +1,6 @@
+/.idea
+/private_aggregators
+/aggregators.py
+/db.sql
+/.env
+/test.py
