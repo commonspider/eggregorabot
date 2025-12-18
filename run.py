@@ -10,5 +10,11 @@ app = create_app()
 app.route(f"/cronjob")(cron_job)
 app.route(f"/{os.environ["FLASK_TELEGRAM_TOKEN"]}")(receive_update)
 
+
+@app.route("/")
+def index():
+    return "OK"
+
+
 if __name__ == "__main__":
     app.run()

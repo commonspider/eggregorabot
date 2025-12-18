@@ -33,6 +33,7 @@ def parse_update(update: Update):
         if entity["type"] != "bot_command":
             continue
         [command, *rest] = message["text"][entity["offset"]:].split(" ")
+        command = command.split("@")[0]
         argument = rest[0] if len(rest) > 0 else None
         for admin in get_chat_administrators(chat_id=chat_id):
             if admin["user"]["id"] == user_id:
