@@ -4,7 +4,7 @@ import time
 from flask import request
 
 from .aggregators import list_aggregators, get_aggregator
-from .app import with_app_context, set_chat_id
+from .app import with_app_context, get_allowed_chat_id
 from .item import send_item
 from .telegram import Update, get_chat_administrators, send_message
 
@@ -29,11 +29,9 @@ def parse_update(update: Update):
         return
     if message["chat"]["type"] not in ("group", "supergroup"):
         return
-
-    chat_id = message["chat"]["id"]
+    if (chat_id := message["chat"]["id"]) != get_allowed_chat_id():
+        return
     user_id = user["id"]
-
-    set_chat_id(chat_id)
 
     for entity in message.get("entities", ()):
         if entity["type"] != "bot_command":

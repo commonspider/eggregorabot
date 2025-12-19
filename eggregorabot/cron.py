@@ -5,7 +5,7 @@ from datetime import datetime
 from sqlalchemy import select, and_
 
 from .aggregators import list_aggregators, get_aggregator
-from .app import with_app_context, get_chat_id
+from .app import with_app_context, get_allowed_chat_id
 from .item import send_item
 from .database import FeedItem, get_db_session
 from .item import Item
@@ -31,7 +31,7 @@ def run_aggregator(name: str) -> list[Item]:
 
 
 def accept_item(item: Item):
-    chat_id = get_chat_id()
+    chat_id = get_allowed_chat_id()
     session = get_db_session()
     if session.execute(
         select(FeedItem)

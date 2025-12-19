@@ -2,7 +2,7 @@ import inspect
 from functools import wraps
 from typing import TypedDict, Any, NotRequired, Literal
 
-from .app import with_app_context, get_session, get_token, get_chat_id
+from .app import with_app_context, get_session, get_token, get_allowed_chat_id
 from .utils import snake_to_camelcase
 
 
@@ -21,7 +21,7 @@ def api(method):
         if len(args) > 0:
             raise RuntimeError("No positional arguments allowed in Telegram API call")
         if has_chat_id and "chat_id" not in kwargs:
-            kwargs["chat_id"] = get_chat_id()
+            kwargs["chat_id"] = get_allowed_chat_id()
         return request(name, kwargs)
 
     name = snake_to_camelcase(method.__name__)

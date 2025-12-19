@@ -35,13 +35,5 @@ def get_token() -> str:
     return current_app.config["TELEGRAM_TOKEN"]
 
 
-def get_chat_id() -> int:
-    if (chat_id := g.get("chat_id")) is not None:
-        return chat_id
-    if (debug_chat_id := current_app.config.get("TELEGRAM_CHAT_ID")) is not None:
-        return debug_chat_id
-    raise ValueError("Parameter chat_id is not set")
-
-
-def set_chat_id(chat_id: int):
-    g.chat_id = chat_id
+def get_allowed_chat_id() -> int:
+    return current_app.config.get("TELEGRAM_ALLOWED_CHAT_ID")
