@@ -12,6 +12,7 @@ from .telegram import Update
 def flask_update_endpoint():
     try:
         update = json.loads(request.data.decode())
+        print(update)
         parse_update(update)
     except Exception as exc:
         print(exc)
@@ -60,7 +61,12 @@ def parse_command(chat_id: int, command: str, argument: str = None):
             elif (aggregator := aggregators[argument]) is None:
                 telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
             else:
-                items = aggregator()
+                try:
+                    items = aggregator()
+                except Exception as exc:
+                    print(exc)
+                    telegram.send_message(chat_id=chat_id, text="Errore")
+                    return
                 if len(items) == 0:
                     telegram.send_message(chat_id=chat_id, text="Il feed è vuoto")
                 else:
