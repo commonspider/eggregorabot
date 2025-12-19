@@ -1,5 +1,7 @@
 import inspect
+import time
 from functools import wraps
+from threading import Lock
 from typing import TypedDict, Any, NotRequired, Literal
 
 from requests import Session
@@ -62,14 +64,22 @@ class Telegram:
         self._token = token
         self._default_chat_id = default_chat_id
         self._session = Session()
+        self._lock = Lock()
 
     def _request(self, endpoint: str, parameters: dict[str, Any] = None):
-        url = f"https://api.telegram.org/bot{self._token}/{endpoint}"
-        response = self._session.post(url, json=parameters)
-        content = response.json()
-        if not content["ok"]:
-            raise Exception(content)
-        return content["result"]
+        with self._lock:
+            while True:
+                url = f"https://api.telegram.org/bot{self._token}/{endpoint}"
+                response = self._session.post(url, json=parameters)
+                content = response.json()
+                if not content["ok"]:
+                    if (parameters := content.get("parameters")) is not None:
+                        if (retry_after := parameters.get("retry_after")) is not None:
+                            time.sleep(retry_after)
+                            continue
+                    raise Exception(content["description"])
+
+                return content["result"]
 
     @api
     def get_updates(self, *, offset: int = None) -> list[Update]:
