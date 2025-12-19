@@ -1,11 +1,12 @@
-import os
-
 from dotenv import load_dotenv
+from flask import current_app
 
-from eggregorabot import set_webhook
+from eggregorabot import app_context, get_telegram
 
 load_dotenv()
-url = os.environ["FLASK_TELEGRAM_WEBHOOK"] + "/" + os.environ["FLASK_TELEGRAM_TOKEN"]
-print(url)
-result = set_webhook(url=url)
-print(result)
+
+with app_context():
+    telegram = get_telegram()
+    url = current_app.config["TELEGRAM_WEBHOOK"] + "/" + current_app.config["TELEGRAM_TOKEN"]
+    result = telegram.set_webhook(url=url)
+    print(result)

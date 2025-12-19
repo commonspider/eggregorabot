@@ -49,23 +49,26 @@ def parse_update(update: Update):
 
 def parse_command(chat_id: int, command: str, argument: str = None):
     telegram = get_telegram()
-    if command == "/lista":
-        if len(aggregators) == 0:
-            telegram.send_message(chat_id=chat_id, text="Nessun feed configurato")
-        else:
-            telegram.send_message(chat_id=chat_id, text="\n".join(aggregators.keys()))
-    elif command == "/invia":
-        if argument is None:
-            telegram.send_message(chat_id=chat_id, text="Manca il nome del feed")
-        elif (aggregator := aggregators[argument]) is None:
-            telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
-        else:
-            items = aggregator()
-            if len(items) == 0:
-                telegram.send_message(chat_id=chat_id, text="Il feed è vuoto")
+    try:
+        if command == "/lista":
+            if len(aggregators) == 0:
+                telegram.send_message(chat_id=chat_id, text="Nessun feed configurato")
             else:
-                for item in items:
-                    send_item(chat_id=chat_id, item=item)
-                    time.sleep(1)
-    else:
-        telegram.send_message(chat_id=chat_id, text="Comando inesistente.")
+                telegram.send_message(chat_id=chat_id, text="\n".join(aggregators.keys()))
+        elif command == "/invia":
+            if argument is None:
+                telegram.send_message(chat_id=chat_id, text="Manca il nome del feed")
+            elif (aggregator := aggregators[argument]) is None:
+                telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
+            else:
+                items = aggregator()
+                if len(items) == 0:
+                    telegram.send_message(chat_id=chat_id, text="Il feed è vuoto")
+                else:
+                    for item in items:
+                        send_item(chat_id=chat_id, item=item)
+                        time.sleep(1)
+        else:
+            telegram.send_message(chat_id=chat_id, text="Comando inesistente.")
+    except Exception as exc:
+        telegram.set_webhook(chat_id=chat_id, text=f"Errore: {exc}")
