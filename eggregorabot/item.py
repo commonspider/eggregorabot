@@ -1,6 +1,6 @@
 from typing import TypedDict, NotRequired
 
-from .telegram import send_message
+from .app import get_telegram
 
 
 class Item(TypedDict):
@@ -21,10 +21,15 @@ class Item(TypedDict):
     end_time: NotRequired[str]
 
 
-def send_item(item: Item):
-    return send_message(
-        text=
-f"""{item["name"]}
+
+def send_item(*, chat_id: int | str = None, item: Item):
+    return get_telegram().send_message(
+        chat_id=chat_id,
+        text=format_item(item)
+    )
+
+
+def format_item(item: Item):
+    return f"""{item["name"]}
 {item.get("description", "")}
 Source: {item["source"]}"""
-    )

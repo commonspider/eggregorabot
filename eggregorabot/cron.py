@@ -1,39 +1,43 @@
+import inspect
 import time
+from collections.abc import Callable
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime
+from functools import partial
 
+from flask import current_app
 from sqlalchemy import select, and_
 
-from .aggregators import list_aggregators, get_aggregator
-from .app import with_app_context, get_allowed_chat_id
-from .item import send_item
-from .database import FeedItem, get_db_session
-from .item import Item
+from .aggregators import aggregators
+from .app import get_allowed_chat_id, get_db
+from .item import Item, send_item
+from .models import FeedItem
 
 
-@with_app_context
 def cron_job():
     with ThreadPoolExecutor() as executor:
-        for items in executor.map(run_aggregator, list_active_aggregators()):
+        aggregators_ready = [
+            partial(aggregator, **get_aggregator_parameters(aggregator))
+            for aggregator in aggregators.values()
+        ]
+        for items in executor.map(lambda agg: agg(), aggregators_ready):
             for item in items:
                 sent = accept_item(item)
                 if sent:
                     time.sleep(1)
 
 
-def list_active_aggregators():
-    return list_aggregators()
-
-
-def run_aggregator(name: str) -> list[Item]:
-    aggregator = get_aggregator(name)
-    return aggregator()
+def get_aggregator_parameters(aggregator: Callable[[], list[Item]]):
+    return {
+        name: current_app.config.get(f"{aggregator.__name__}_{name}".upper())
+        for name in inspect.signature(aggregator).parameters.keys()
+    }
 
 
 def accept_item(item: Item):
     chat_id = get_allowed_chat_id()
-    session = get_db_session()
-    if session.execute(
+    db = get_db()
+    if db.execute(
         select(FeedItem)
         .where(and_(
             FeedItem.chat_id == chat_id,
@@ -42,12 +46,12 @@ def accept_item(item: Item):
         ))
     ).first() is not None:
         return False
-    session.add(FeedItem(
+    db.add(FeedItem(
         chat_id=chat_id,
         source=item["source"],
         item_id=item["id"],
         timestamp=datetime.now().timestamp()
     ))
-    session.commit()
-    send_item(item)
+    db.commit()
+    send_item(chat_id=chat_id, item=item)
     return True

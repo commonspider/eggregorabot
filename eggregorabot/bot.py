@@ -3,13 +3,13 @@ import time
 
 from flask import request
 
-from .aggregators import list_aggregators, get_aggregator
-from .app import with_app_context, get_allowed_chat_id
+from .aggregators import aggregators
+from .app import get_allowed_chat_id, get_telegram
 from .item import send_item
-from .telegram import Update, get_chat_administrators, send_message
+from .telegram import Update
 
 
-def receive_update():
+def flask_update_endpoint():
     try:
         update = json.loads(request.data.decode())
         parse_update(update)
@@ -21,7 +21,6 @@ def receive_update():
 
 
 
-@with_app_context
 def parse_update(update: Update):
     if (message := update.get("message")) is None:
         return
@@ -39,34 +38,34 @@ def parse_update(update: Update):
         [command, *rest] = message["text"][entity["offset"]:].split(" ")
         command = command.split("@")[0]
         argument = rest[0] if len(rest) > 0 else None
-        for admin in get_chat_administrators(chat_id=chat_id):
+        for admin in get_telegram().get_chat_administrators(chat_id=chat_id):
             if admin["user"]["id"] == user_id:
                 break
         else:
             return
-        parse_command(command, argument)
+        parse_command(chat_id, command, argument)
         break
 
 
-def parse_command(command: str, argument: str = None):
+def parse_command(chat_id: int, command: str, argument: str = None):
+    telegram = get_telegram()
     if command == "/lista":
-        aggregators = list_aggregators()
         if len(aggregators) == 0:
-            send_message("Nessun feed configurato")
+            telegram.send_message(chat_id=chat_id, text="Nessun feed configurato")
         else:
-            send_message(text="\n".join(list_aggregators()))
+            telegram.send_message(chat_id=chat_id, text="\n".join(aggregators.keys()))
     elif command == "/invia":
         if argument is None:
-            send_message(text="Manca il nome del feed")
-        elif (aggregator := get_aggregator(argument)) is None:
-            send_message(text="Feed non trovato.")
+            telegram.send_message(chat_id=chat_id, text="Manca il nome del feed")
+        elif (aggregator := aggregators[argument]) is None:
+            telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
         else:
             items = aggregator()
             if len(items) == 0:
-                send_message(text="Il feed è vuoto")
+                telegram.send_message(chat_id=chat_id, text="Il feed è vuoto")
             else:
                 for item in items:
-                    send_item(item)
+                    send_item(chat_id=chat_id, item=item)
                     time.sleep(1)
     else:
-        send_message(text="Comando inesistente.")
+        telegram.send_message(chat_id=chat_id, text="Comando inesistente.")

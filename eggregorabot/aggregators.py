@@ -3,7 +3,6 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
-from .app import with_app_context
 from .item import Item
 
 aggregators: dict[str, Callable[[], list[Item]]] = {}
@@ -29,13 +28,5 @@ def load_aggregators(*paths: Path):
 
 
 def aggregator(function):
-    aggregators[function.__name__] = with_app_context(function)
+    aggregators[function.__name__] = function
     return aggregators[function.__name__]
-
-
-def list_aggregators():
-    return list(aggregators.keys())
-
-
-def get_aggregator(name: str):
-    return aggregators.get(name)

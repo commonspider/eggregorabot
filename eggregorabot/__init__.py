@@ -1,7 +1,6 @@
-from .app import create_app
-from .telegram import loop_updates, set_webhook
-from .bot import parse_update, receive_update
+from .app import create_app, get_telegram, app_context
+from .bot import parse_update, flask_update_endpoint
 from .item import Item
 from .aggregators import aggregator, load_aggregators
-from .database import create_database
+from .models import initialize_models
 from .cron import cron_job
