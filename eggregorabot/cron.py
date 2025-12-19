@@ -1,14 +1,10 @@
-import inspect
 import time
-from collections.abc import Callable
 from concurrent.futures.thread import ThreadPoolExecutor
 from datetime import datetime
-from functools import partial
 
-from flask import current_app
 from sqlalchemy import select, and_
 
-from .aggregators import aggregators
+from .aggregators import aggregator_names, call_aggregator
 from .app import get_allowed_chat_id, get_db
 from .item import Item, send_item
 from .models import FeedItem
@@ -17,11 +13,7 @@ from .models import FeedItem
 def cron_job():
     try:
         with ThreadPoolExecutor() as executor:
-            aggregators_ready = [
-                partial(aggregator, **get_aggregator_parameters(aggregator))
-                for aggregator in aggregators.values()
-            ]
-            for items in executor.map(lambda agg: agg(), aggregators_ready):
+            for items in executor.map(call_aggregator, aggregator_names()):
                 for item in items:
                     sent = accept_item(item)
                     if sent:
@@ -30,13 +22,6 @@ def cron_job():
         print(exc)
     finally:
         return ""
-
-
-def get_aggregator_parameters(aggregator: Callable[[], list[Item]]):
-    return {
-        name: current_app.config.get(f"{aggregator.__name__}_{name}".upper())
-        for name in inspect.signature(aggregator).parameters.keys()
-    }
 
 
 def accept_item(item: Item):

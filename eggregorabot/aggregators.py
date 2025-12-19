@@ -1,7 +1,10 @@
 import importlib.util
+import inspect
 import sys
 from collections.abc import Callable
 from pathlib import Path
+
+from flask import current_app
 
 from .item import Item
 
@@ -30,3 +33,17 @@ def load_aggregators(*paths: Path):
 def aggregator(function):
     aggregators[function.__name__] = function
     return aggregators[function.__name__]
+
+
+def aggregator_names():
+    return list(aggregators.keys())
+
+
+def call_aggregator(name: str):
+    if (agg := aggregators.get(name)) is None:
+        raise RuntimeError("Aggregator not found")
+    kwargs = {
+        name: current_app.config.get(f"{aggregator.__name__}_{name}".upper())
+        for name in inspect.signature(aggregator).parameters.keys()
+    }
+    return agg(**kwargs)

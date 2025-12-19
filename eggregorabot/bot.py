@@ -3,7 +3,7 @@ import time
 
 from flask import request
 
-from .aggregators import aggregators
+from .aggregators import aggregator_names, call_aggregator
 from .app import get_allowed_chat_id, get_telegram
 from .item import send_item
 from .telegram import Update
@@ -49,20 +49,21 @@ def parse_update(update: Update):
 
 def parse_command(chat_id: int, command: str, argument: str = None):
     telegram = get_telegram()
+    aggregators = aggregator_names()
     try:
         if command == "/lista":
             if len(aggregators) == 0:
                 telegram.send_message(chat_id=chat_id, text="Nessun feed configurato")
             else:
-                telegram.send_message(chat_id=chat_id, text="\n".join(aggregators.keys()))
+                telegram.send_message(chat_id=chat_id, text="\n".join(aggregators))
         elif command == "/invia":
             if argument is None:
                 telegram.send_message(chat_id=chat_id, text="Manca il nome del feed")
-            elif (aggregator := aggregators[argument]) is None:
+            elif (agg := aggregators.get(argument)) is None:
                 telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
             else:
                 try:
-                    items = aggregator()
+                    items = call_aggregator(agg)
                 except Exception as exc:
                     print(exc)
                     telegram.send_message(chat_id=chat_id, text="Errore")
