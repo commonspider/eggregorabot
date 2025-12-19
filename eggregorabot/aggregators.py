@@ -2,6 +2,7 @@ import importlib.util
 import inspect
 import sys
 from collections.abc import Callable
+from functools import partial
 from pathlib import Path
 
 from flask import current_app
@@ -40,10 +41,14 @@ def aggregator_names():
 
 
 def call_aggregator(name: str):
+    return wrap_aggregator(name)()
+
+
+def wrap_aggregator(name: str):
     if (agg := aggregators.get(name)) is None:
         raise RuntimeError("Aggregator not found")
     kwargs = {
         name: current_app.config.get(f"{agg.__name__}_{name}".upper())
         for name in inspect.signature(agg).parameters.keys()
     }
-    return agg(**kwargs)
+    return partial(agg, **kwargs)

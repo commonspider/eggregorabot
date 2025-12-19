@@ -4,7 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import select, and_
 
-from .aggregators import aggregator_names, call_aggregator
+from .aggregators import aggregator_names, wrap_aggregator
 from .app import get_allowed_chat_id, get_db
 from .item import Item, send_item
 from .models import FeedItem
@@ -13,7 +13,7 @@ from .models import FeedItem
 def cron_job():
     try:
         with ThreadPoolExecutor() as executor:
-            for items in executor.map(call_aggregator, aggregator_names()):
+            for items in executor.map(lambda agg: agg(), map(wrap_aggregator, aggregator_names())):
                 for item in items:
                     sent = accept_item(item)
                     if sent:
