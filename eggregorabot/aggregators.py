@@ -43,8 +43,7 @@ def call_aggregator(name: str):
     if (agg := aggregators.get(name)) is None:
         raise RuntimeError("Aggregator not found")
     kwargs = {
-        name: current_app.config.get(f"{aggregator.__name__}_{name}".upper())
-        for name in inspect.signature(aggregator).parameters.keys()
+        name: current_app.config.get(f"{agg.__name__}_{name}".upper())
+        for name in inspect.signature(agg).parameters.keys()
     }
-    print(kwargs)
     return agg(**kwargs)
