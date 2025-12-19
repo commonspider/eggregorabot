@@ -58,11 +58,11 @@ def parse_command(chat_id: int, command: str, argument: str = None):
         elif command == "/invia":
             if argument is None:
                 telegram.send_message(chat_id=chat_id, text="Manca il nome del feed")
-            elif (agg := aggregators.get(argument)) is None:
+            elif argument not in aggregators:
                 telegram.send_message(chat_id=chat_id, text="Feed non trovato.")
             else:
                 try:
-                    items = call_aggregator(agg)
+                    items = call_aggregator(argument)
                 except Exception as exc:
                     print(exc)
                     telegram.send_message(chat_id=chat_id, text="Errore")
@@ -76,4 +76,5 @@ def parse_command(chat_id: int, command: str, argument: str = None):
         else:
             telegram.send_message(chat_id=chat_id, text="Comando inesistente.")
     except Exception as exc:
-        telegram.set_webhook(chat_id=chat_id, text=f"Errore: {exc}")
+        print(exc)
+        telegram.set_webhook(chat_id=chat_id, text="Errore")
