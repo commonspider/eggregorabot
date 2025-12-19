@@ -15,16 +15,21 @@ from .models import FeedItem
 
 
 def cron_job():
-    with ThreadPoolExecutor() as executor:
-        aggregators_ready = [
-            partial(aggregator, **get_aggregator_parameters(aggregator))
-            for aggregator in aggregators.values()
-        ]
-        for items in executor.map(lambda agg: agg(), aggregators_ready):
-            for item in items:
-                sent = accept_item(item)
-                if sent:
-                    time.sleep(1)
+    try:
+        with ThreadPoolExecutor() as executor:
+            aggregators_ready = [
+                partial(aggregator, **get_aggregator_parameters(aggregator))
+                for aggregator in aggregators.values()
+            ]
+            for items in executor.map(lambda agg: agg(), aggregators_ready):
+                for item in items:
+                    sent = accept_item(item)
+                    if sent:
+                        time.sleep(1)
+    except Exception as exc:
+        print(exc)
+    finally:
+        return ""
 
 
 def get_aggregator_parameters(aggregator: Callable[[], list[Item]]):

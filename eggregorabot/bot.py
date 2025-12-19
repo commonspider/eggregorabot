@@ -14,8 +14,7 @@ def flask_update_endpoint():
         update = json.loads(request.data.decode())
         parse_update(update)
     except Exception as exc:
-        with open("last_exception", "w") as f:
-            print(exc, file=f)
+        print(exc)
     finally:
         return ""
 

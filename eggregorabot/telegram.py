@@ -64,7 +64,8 @@ class Telegram:
         self._session = Session()
 
     def _request(self, endpoint: str, parameters: dict[str, Any] = None):
-        response = self._session.post(f"https://api.telegram.org/bot{self._token}/{endpoint}", json=parameters)
+        url = f"https://api.telegram.org/bot{self._token}/{endpoint}"
+        response = self._session.post(url, json=parameters)
         content = response.json()
         if not content["ok"]:
             raise Exception(content)
