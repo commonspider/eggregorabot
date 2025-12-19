@@ -12,7 +12,6 @@ from .telegram import Update
 def flask_update_endpoint():
     try:
         update = json.loads(request.data.decode())
-        print(update)
         parse_update(update)
     except Exception as exc:
         print(exc)

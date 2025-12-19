@@ -46,4 +46,5 @@ def call_aggregator(name: str):
         name: current_app.config.get(f"{aggregator.__name__}_{name}".upper())
         for name in inspect.signature(aggregator).parameters.keys()
     }
+    print(kwargs)
     return agg(**kwargs)
