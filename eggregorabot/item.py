@@ -23,13 +23,19 @@ class Item(TypedDict):
 
 
 def send_item(*, chat_id: int | str = None, item: Item):
-    return get_telegram().send_message(
+    get_telegram().send_message(
         chat_id=chat_id,
         text=format_item(item)
     )
 
 
 def format_item(item: Item):
-    return f"""{item["name"]}
-{item.get("description", "")}
-Source: {item["source"]}"""
+    message = [
+        f"Source: {item['source']}",
+        item["name"]
+    ]
+    if (description := item.get("description")) is not None:
+        message.append(description)
+    if (html := item.get("html")) is not None:
+        message.append("L'item contiene dell'html")
+    return "\n".join(message)
